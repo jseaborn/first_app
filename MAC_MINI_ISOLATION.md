@@ -197,18 +197,175 @@ For production or sensitive data environments, add Layer 3 (VM/Docker).
 
 ---
 
+## Layer 5: Filesystem Sandboxing (Seatbelt)
+
+Beyond user account isolation, use macOS `sandbox-exec` for process-level restrictions.
+
+### Anthropic's sandbox-runtime (Recommended)
+
+Anthropic provides [sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime),
+which sandboxes filesystem and network access without Docker or VMs:
+
+```bash
+npm install -g @anthropic-ai/sandbox-runtime
+```
+
+Configure `~/.srt-settings.json`:
+```json
+{
+  "network": {
+    "allowedDomains": ["api.anthropic.com", "*.anthropic.com"],
+    "deniedDomains": []
+  },
+  "filesystem": {
+    "denyRead": ["~/.ssh", "~/.aws", "~/.gnupg", "~/.config/gh"],
+    "allowWrite": ["/Users/Shared/agent-workspace", "/tmp"],
+    "denyWrite": [".env", "*.pem", "*.key"]
+  }
+}
+```
+
+Run your agent sandboxed:
+```bash
+srt "your-agent-command-here"
+```
+
+### Custom Seatbelt Profile
+
+For maximum control, create a deny-all-default sandbox profile.
+
+Create `agent-sandbox.sb`:
+```scheme
+(version 1)
+(deny default)
+
+;; Allow basic execution
+(allow process-exec)
+(allow process-fork)
+
+;; System libraries (read-only)
+(allow file-read*
+  (subpath "/usr/lib")
+  (subpath "/usr/bin")
+  (subpath "/bin")
+  (subpath "/Library/Frameworks")
+  (subpath "/System"))
+
+;; Agent workspace (read + write)
+(allow file-read* (subpath "/Users/Shared/agent-workspace"))
+(allow file-write* (subpath "/Users/Shared/agent-workspace"))
+(allow file-write* (subpath "/private/tmp"))
+
+;; Block all other user directories
+(deny file-read* (subpath "/Users")
+  (require-not (subpath "/Users/Shared/agent-workspace")))
+
+;; Network: HTTPS only
+(allow network-outbound (remote ip "*:443"))
+(allow network-outbound (remote unix-socket (path-literal "/var/run/mDNSResponder")))
+
+(allow sysctl-read)
+(allow mach-lookup)
+```
+
+Run with: `sandbox-exec -f agent-sandbox.sb /path/to/agent`
+
+### Application-Level Firewall (GUI Option)
+
+For per-process network monitoring with a visual interface:
+- [**LuLu**](https://objective-see.org/products/lulu.html) (free, open-source): blocks unknown outgoing connections
+- **Little Snitch** ($59): more polished UI, per-process domain filtering
+
+Both let you create rules like "allow agent to connect to api.anthropic.com:443 only."
+
+---
+
+## Comparison of Isolation Approaches
+
+| Approach | Isolation | Overhead | Setup Time | Best For |
+|----------|-----------|----------|------------|----------|
+| SandVault (user account) | Medium | Zero | 10 min | Quick setup, CLI agents |
+| sandbox-runtime (Seatbelt) | Medium-High | Minimal | 15 min | Claude Code, lightweight agents |
+| Docker Desktop | High | Low-Medium | 30 min | Complex agent environments |
+| ClodPod (macOS VM) | Very High | Medium | 45 min | Maximum isolation |
+| Apple Containers (macOS 26+) | Very High | Low | TBD | Future-proof (VM-per-container) |
+
+---
+
 ## Using Your Claude Code Account
 
-**Claude Code subscription cannot directly power OpenClaw.** They are separate:
+### Critical Policy Change (February 2026)
+
+Anthropic has **banned the use of Claude Pro/Max subscription OAuth tokens in
+third-party tools**. This includes OpenClaw, Cline, Roo Code, and other
+non-Anthropic applications. The policy is clear:
+
+- **Official tools** (Claude Code CLI, claude.ai): use your subscription
+- **Third-party tools** (OpenClaw, etc.): must use API keys with per-token billing
+
+Source: [Anthropic Bans Claude Subscription OAuth in Third-Party Apps](https://winbuzzer.com/2026/02/19/anthropic-bans-claude-subscription-oauth-in-third-party-apps-xcxwbn/)
+
+### What This Means for You
 
 | | Claude Code CLI | OpenClaw |
 |---|---|---|
-| Authentication | Anthropic account (OAuth) | API key |
-| Billing | Subscription (Pro/Max) | API usage (pay-per-token) |
-| Cost control | Built-in limits | Manual spend caps |
+| Authentication | Anthropic account (OAuth) | API key (required) |
+| Billing | Subscription (Pro/Max) | Pay-per-token (API) |
+| Cost control | Built-in dual-layer limits | Workspace spend caps |
 | Security model | Sandboxed CLI with permissions | Full system access |
+| Policy | Officially supported | Must use separate API key |
 
-**Recommendation**: Use Claude Code directly with the framework from this project.
-If you also want to experiment with OpenClaw, create a separate API workspace
-with a strict spend cap ($20-50/month) and run it in the sandboxed environment
-described above.
+### API Spend Tiers
+
+| Tier | Deposit Required | Monthly Spend Cap |
+|------|-----------------|-------------------|
+| Tier 1 | $5 | $100 |
+| Tier 2 | $40 | $500 |
+| Tier 3 | $200 | $1,000 |
+| Tier 4 | $400 | $5,000 |
+
+**Recommendation**: Stay on Tier 1 ($100/mo cap) when experimenting with OpenClaw.
+Set the workspace spend limit even lower (e.g., $50/mo) for safety.
+
+### Monitoring API Costs
+
+```bash
+# Check cost breakdown via API
+curl https://api.anthropic.com/v1/organizations/cost_report \
+  -H "x-api-key: $ANTHROPIC_API_KEY"
+
+# Check token consumption
+curl https://api.anthropic.com/v1/organizations/usage_report/messages \
+  -H "x-api-key: $ANTHROPIC_API_KEY"
+```
+
+Within Claude Code, use `/cost` to see real-time session usage.
+
+---
+
+## Recommended Setup (Quick Start)
+
+### If you want OpenClaw on your Mac Mini (30-minute setup):
+
+```bash
+# 1. Install SandVault (sandboxed user account)
+brew install sandvault && sv build
+
+# 2. Create spend-capped API key at console.anthropic.com
+#    - New workspace: "OpenClaw Sandbox"
+#    - Spend limit: $50/month
+#    - Generate API key
+
+# 3. Configure sandbox-runtime for filesystem/network restriction
+npm install -g @anthropic-ai/sandbox-runtime
+# Edit ~/.srt-settings.json (see Layer 5 above)
+
+# 4. Run OpenClaw in the sandbox
+sv shell /Users/Shared/sv-$USER -- \
+  env ANTHROPIC_API_KEY=sk-ant-sandbox-... openclaw start
+```
+
+### If you want the same benefits without OpenClaw (recommended):
+
+Use Claude Code directly with the agent framework in this repository.
+See `CLAUDE.md`, `.agent-context/`, and `.claude/commands/`.
