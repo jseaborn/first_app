@@ -25,6 +25,11 @@
 - 2026-02-21: Researched Slack/Telegram as real-time feedback channels for agents.
   Findings saved to CHAT_INTEGRATION.md. Key result: both work today — Slack has
   first-party support (Claude Code in Slack), Telegram has strong community tools.
+- 2026-02-21: Researched Skill Seekers (yusufkaraaslan/Skill_Seekers) for tool-specific
+  skill generation. Findings saved to dev-docs/skill-seekers/RESEARCH.md.
+  Key: converts docs/repos/PDFs into Claude skills (SKILL.md + references/ ZIP).
+  25 MCP tools, --enhance-local uses local Claude CLI (no API cost on Max plan).
+  Skills install to ~/.claude/skills/{name}/. Default target is Claude.
 
 ## Learnings
 - 2026-02-21: OpenClaw has 512 known vulnerabilities, 8 critical. Do not run
@@ -39,3 +44,11 @@
   - Claude Code hooks (Notification, Stop, PreToolUse) are the simplest entry point
   - Security: Anthropic's original Slack MCP server had a data exfiltration vuln
     via link unfurling. Use Slack's official MCP server instead.
+- 2026-02-21: Skill Seekers (github.com/yusufkaraaslan/Skill_Seekers):
+  - pip install skill-seekers[mcp] for MCP integration (25 tools)
+  - `skill-seekers install --config {name} --enhance-local` is the one-liner
+  - Skills = ZIP of SKILL.md (YAML frontmatter) + references/ markdown files
+  - --target flag: claude (default), gemini, openai, markdown
+  - 11 presets in-repo, 24+ via SkillSeekersWeb.com API
+  - Security: spawns subprocesses, downloaded content is unsandboxed,
+    community configs need validation before use
