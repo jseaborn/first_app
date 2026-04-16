@@ -1,19 +1,25 @@
-# LinkedIn Post 4: The design problem
+# LinkedIn Post 4: The design problem (revised from McKinsey source)
 
-McKinsey's agentic AI report keeps coming back to design. Not branding, not UI polish. The structural decisions about how humans and agents work together.
+McKinsey looked at 50+ agentic AI builds and the finding that sticks with me is this: organizations keep focusing on the agent instead of the workflow. They build impressive demos that don't improve the actual work. Some companies have had to rehire people where agents failed.
 
-I've been a product designer for over twenty years, and this is where the conversation gets interesting for me. Because the design skills that matter here are genuinely different from the ones most of us have been building.
+The report says the teams getting value are the ones redesigning entire workflows, not just dropping an agent into an existing process. And their framework for doing that is interesting. They argue most tasks in a workflow don't need agents at all. Rule-based and repetitive work gets automated. Extractive tasks get basic gen AI. Classification and forecasting get predictive analytics. You only reach for an agent when you've got multi-step decisions with high variability. Everything else in the workflow gets the simplest technology that handles it.
 
-Traditional product design is about making tools usable. You design screens, flows, interactions. The user is in control. The product does what they tell it. Your job is to reduce friction between intent and action.
+That's a design problem. But it doesn't look like any design problem I was trained for.
 
-Agentic AI inverts that. The agent acts on its own. The human's job shifts from doing the work to evaluating work someone else did. And evaluating someone else's work is a completely different cognitive task than doing it yourself. Anyone who's managed people knows this.
+I've been doing product design for over twenty years. The job, as I learned it, is about making tools usable. You design screens, flows, interactions. The user is in control. Your job is reducing friction between what someone wants to do and the tool that helps them do it.
 
-So you're no longer designing for "can the user accomplish their goal?" You're designing for "can the user tell whether the agent accomplished it correctly?" That second question is harder, and most of our existing design patterns don't help with it.
+Agentic AI flips that. The agent does the work. The human evaluates it. And evaluating someone else's work is a completely different cognitive task than doing it yourself. Anyone who's managed people knows this. You're reading output you didn't produce, trying to decide if it's good enough, often in a domain where "good enough" is hard to define.
 
-I keep coming back to the insurer in McKinsey's study. They added bounding boxes and auto-scrolling so reviewers could check AI summaries against the source documents. 95% acceptance. They didn't make the AI smarter. They made it possible to verify the AI's work without losing your mind. That's a design intervention, but it looks nothing like what most of us would put in a product spec. Nobody wireframed that. It came from watching people struggle with output they couldn't check.
+So the design question isn't "can the user accomplish their goal?" anymore. It's "can the user tell whether the agent accomplished it correctly?" Most of the design patterns we've spent decades refining don't help with that second question.
 
-The skill set this needs is closer to systems design than screen design. How much autonomy does the agent get? Where do you insert friction so humans stay engaged? How do you signal what the agent is confident about and what it's guessing at? What happens when the agent is wrong and the human can't tell?
+McKinsey's report has a detail that I keep coming back to. One insurer in the study built their agent review interface so that AI summaries appeared alongside the source documents with auto-scrolling and bounding boxes highlighting what the AI referenced. User acceptance hit 95%. The AI itself didn't change. They just made verification fast enough that people would actually do it.
 
-Most product designers I know weren't trained for any of this. I wasn't. The instinct we've all built is to make things smooth, remove friction, get out of the user's way. In agentic AI, some of that friction is the product. Take it out and you get the failure modes McKinsey keeps documenting: humans rubber-stamping bad output, or re-doing the work from scratch because they can't trust what the agent gave them.
+That intervention came from watching people struggle, not from a product spec. Nobody wireframed it. It's closer to the kind of problem-solving you see in operations design or process engineering than in a typical product design sprint.
 
-I think what we're actually doing is closer to organizational design than product design. You're designing a working relationship between a human and a collaborator that's sometimes wrong and doesn't know it. That's a management problem wearing a UI hat. And we're going to need different skills to get it right than the ones that got us here.
+McKinsey also talks about treating agent onboarding like employee onboarding. Give agents job descriptions. Run evals. Provide continuous feedback. The language is telling. We've moved from designing tools to designing working relationships. The agent isn't an interface element. It's a collaborator that's sometimes wrong and can't tell you when.
+
+The instinct most product designers have, the one I have, is to make things smooth. Remove friction. Get out of the user's way. In agentic workflows, some of that friction is what makes the system work. Take it out and you get the failure modes the report keeps documenting: humans rubber-stamping bad output because checking it is too hard, or re-doing everything from scratch because they don't trust any of it.
+
+The skill set this actually needs is closer to organizational design than product design. You're deciding how much autonomy the agent gets. Where humans have to engage deeply. How to signal confidence and uncertainty. What happens at the edges when the system breaks down. Those are management questions dressed up as interface questions. And I think most of us in design are going to have to learn a different set of muscles to get them right.
+
+Source: [One year of agentic AI: Six lessons from the people doing the work](https://www.mckinsey.com/capabilities/quantumblack/our-insights/one-year-of-agentic-ai-six-lessons-from-the-people-doing-the-work) (McKinsey / QuantumBlack)
